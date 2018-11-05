@@ -26,5 +26,5 @@ A BlueJ extension that manages multiple quality assessment tools
 ### Team Members
 - James Niedfeldt | jniedfe1@msudenver.edu
 - Jon Bowen | jbowen10@msudenver.edu
-- **Travis | email@email.com**
-- **Sky | email@email.com**
+- Sky Liu | tliu1@msudenver.edu
+- Travis Rebhan | trebhan@msudenver.edu
