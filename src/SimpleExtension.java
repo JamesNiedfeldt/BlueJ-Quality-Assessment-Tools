@@ -1,5 +1,3 @@
-package SimpleExtension;
-
 import bluej.extensions.*;
 import bluej.extensions.event.*;
 import javax.swing.*;
