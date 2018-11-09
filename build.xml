@@ -6,7 +6,7 @@
   <property name="authors" value="James Niedfeldt, Jon Bowen, Sky Liu, Travis Rebhan"/>
   <property name="copyright" value="Copyright (c) 2018 by James Niedfeldt, Jon Bowen, Sky Liu, Travis Rebhan"/>
 
-  <!-- <property name="mainclass" value="SimpleExtension"/> -->
+  <property name="mainclass" value="SimpleExtension"/>
   <property name="extentionEntryClass" value = "SimpleExtension"/>
   <property name="src" location="src"/>
   <property name="test" location="test"/>
@@ -146,6 +146,7 @@
   <target name="dist" depends="compile" description="generate the distribution" >
     <mkdir dir="${dist}"/>
     <jar jarfile="${dist}/${ant.project.name}-${DSTAMP}.jar" basedir="${srcBuild}">
+      <fileset file="${lib}/bluejext.jar"/>
       <manifest>
         <attribute name="Main-Class" value="${mainclass}" />
       </manifest>
