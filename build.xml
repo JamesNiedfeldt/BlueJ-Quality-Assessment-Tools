@@ -6,7 +6,8 @@
   <property name="authors" value="James Niedfeldt, Jon Bowen, Sky Liu, Travis Rebhan"/>
   <property name="copyright" value="Copyright (c) 2018 by James Niedfeldt, Jon Bowen, Sky Liu, Travis Rebhan"/>
 
-  <property name="mainclass" value="MainSample"/>
+  <!-- <property name="mainclass" value="SimpleExtension"/> -->
+  <property name="extentionEntryClass" value = "SimpleExtension"/>
   <property name="src" location="src"/>
   <property name="test" location="test"/>
   <property name="lib" location="lib"/>
