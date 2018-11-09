@@ -1,492 +1,177 @@
-<project xmlns:jacoco="antlib:org.jacoco.ant" name="BlueJ-Quality-Assessment-Tools" default="all" basedir="." >
-  <description>
-      Build file for BlueJ Quality Assessment Tools
-  </description>
-  <property name="version" value="0.0.1"/>
-  <property name="authors" value="James Niedfeldt, Jon Bowen, Sky Liu, Travis Rebhan"/>
-  <property name="copyright" value="Copyright (c) 2018 by James Niedfeldt, Jon Bowen, Sky Liu, Travis Rebhan"/>
+<project name="bluejcheckstyle" default="build.bindist" basedir=".">
 
-  <!-- REMOVE ME - BlueJ extensions don't have a main method -->
-  <property name="mainclass" value="MainSample"/>
+  <!-- set global properties for this build -->
 
-  <!-- This is the class that extends the BlueJ extension class -->
-  <property name="extensionEntryClass" value="SimpleExtension"/>
+  <!-- Give user a chance to override without editing this file -->
+  <!-- (and without typing -D each time it compiles it) -->
+  <property file="checkstyle.buildproperties" />
+  <property file="${user.home}/checkstyle.buildproperties" />
 
-  <property name="src" location="src"/>
-  <property name="test" location="test"/>
-  <property name="lib" location="lib"/>
-  <property name="bluejext.jar" value="${lib}/bluejext.jar" />
+  <property name="bluejext.jar" value="lib/bluejext.jar" />
+  <property name="checkstyle-all.jar" value="lib/checkstyle-all.jar" />
 
-  <property name="antDirs" location="antDirs"/>
-  <property name="build" location="${antDirs}/build"/>
-  <property name="srcBuild" location="${build}/src"/>
-  <property name="testBuild" location="${build}/test"/>
-  <property name="dist" location="${antDirs}/dist"/>
-  <property name="docPublic" location="${antDirs}/doc-public"/>
-  <property name="docPrivate" location="${antDirs}/doc-private"/>
-  <property name="stylecheck" location="${antDirs}/stylecheck"/>
-  <property name="junitReports" location="${antDirs}/junit-reports"/>
-  <property name="formattedsrc" location="${antDirs}/formatted-src"/>
+  <property name="dist.dir" value="target/dist" />
 
-  <!-- Jar and object (.class) files needed to compile src -->
-  <path id="classpath.lib">
-    <fileset dir="${lib}" includes="**/*.jar"/>
+  <property name="extension-version" value="5.4.1" />
+  <property name="extension" value="checkstyle-extension-${extension-version}" />
+
+  <property name="dist.extensions.dir" value="${dist.dir}/${extension}/lib/extensions"/>
+  <property name="dist.docs.dir" value="${dist.dir}/${extension}/docs/extensions/checkstyle"/>
+
+  <!-- add classes to generate Javadoc -->
+  <path id="javadoc.classpath">
+    <pathelement location="${ant.home}/lib/crimson.jar" />
+    <path refid="run.classpath" />
   </path>
 
-  <!-- Jar and object (.class) files needed to compile test -->
-  <path id="classpath.test" cache="true">
-    <fileset dir="${lib}" includes="**/*.jar"/>
-    <pathelement location="${srcBuild}"/>
+  <path id="build.classpath">
+    <pathelement location="${bluejext.jar}" />
+    <pathelement location="${checkstyle-all.jar}" />
+    <pathelement location="${ant.home}/lib/ant.jar" />
   </path>
 
-  <!-- HTML version -->
-  <condition property="html.version" value="-html5" else="">
-    <not>
-      <or>
-        <equals arg1="${ant.java.version}" arg2="1.7"/>
-        <equals arg1="${ant.java.version}" arg2="1.8"/>
-      </or>
-    </not>
-  </condition>
+  <path id="run.classpath">
+    <pathelement location="target/checkstyle" />
+    <path refid="build.classpath" />
+  </path>
 
-  <!-- checkstyle properties -->
-  <property name="checkstyle.jar" value="${lib}/checkstyle.jar"/>
-  <property name="checkstyle.xsl" value="${lib}/checkstyle.xsl"/>
-  <property name="checks.xml" value="${lib}/jp_checks.xml"/>
-
-  <!-- proguard properties -->
-  <condition property="libraryjars"
-             value="${java.home}/jmods/java.base.jmod(!**.jar;!module-info.class)"
-             else="${java.home}/lib/rt.jar">
-    <not>
-      <or>
-        <equals arg1="${ant.java.version}" arg2="1.7"/>
-        <equals arg1="${ant.java.version}" arg2="1.8"/>
-      </or>
-    </not>
-  </condition>
-  <property name="proguard.dir" location="lib/proguard"/>
-  <property name="proguard.config" value="proguardConfig.pro"/>
-  <property name="proguard.optimize.jar" value="StrategicPlayer42Winner.jar"/>
-  <property name="proguard.optimize.class" value="StrategicPlayer42Winner.class"/>
-  <property name="proguard.optimize.interface" value="StrategicPlayer.class"/>
-
-  
-
-  <target name="all" depends="clean, doc-private, junitReport, checkstyle, coverage, pmd, cpd, format"/>
-
-
-  <target name="init">
-    <tstamp>
-    	 <format property="time.stamp" pattern="yy-MM-dd_HHmmss"/>
-    </tstamp>
+  <target name="display.classpath" description="Displays the run classpath">
+    <property name="asd" refid="run.classpath" />
+    <echo message="Classpath is ${asd}" />
   </target>
 
+  <!-- -->
+  <!-- Cleanup targets -->
+  <!-- -->
+  <target name="clean" description="Cleans any directories and generated files">
+    <delete dir="target" />
+  </target>
 
-  <!-- COMPILE SRC AND TEST FILES -->
-  <target name="compile" depends="init" description="compile the source" >
-    <!-- Compile source -->
-    <mkdir dir="${srcBuild}"/>
-    <javac  srcdir="${src}" 
-            destdir="${srcBuild}" 
-            classpath="lib/bluejext.jar"
-            debug="on" includeantruntime="false" encoding="cp1252" 
-            memoryinitialsize="1024m" memorymaximumsize="1024m" fork="yes">
-      <compilerarg value="-Xlint"/>
-    </javac>
-
-    <!-- Compile test -->
-    <mkdir dir="${testBuild}"/>
-    <javac  srcdir="${test}" 
-            destdir="${testBuild}" 
-            classpathref="classpath.test"
-            debug="on" includeantruntime="false" encoding="cp1252" 
-            memoryinitialsize="1024m" memorymaximumsize="1024m" fork="yes">
-      <compilerarg value="-Xlint"/>
+  <!-- -->
+  <!-- COMPILE TARGETS -->
+  <!-- -->
+  <target name="compile.checkstyle"
+          description="Compiles the source code">
+    <mkdir dir="target/checkstyle" />
+    <javac srcdir="src/checkstyle"
+           destdir="target/checkstyle"
+           deprecation="on" debug="on"
+           classpathref="build.classpath">
+     <compilerarg value="-Xlint:unchecked"/>
     </javac>
   </target>
 
-  <!-- EXECUTE JUNIT TESTS AND SAVE IN ${junitReports} -->
-  <target name="test" depends="compile" description="run junit tests">
-    <mkdir dir="${junitReports}"/>
-    <junit printsummary="withOutAndErr" haltonfailure="no" showoutput="true">
-      <classpath>
-        <path refid="classpath.test"/>
-        <path location="${testBuild}"/>
-      </classpath>
-      <formatter type="xml"/>
-      <formatter type="plain" usefile="false" />
-      <formatter type="plain"/>
-      <batchtest fork="yes" todir="${junitReports}">
-        <fileset dir="${test}" includes="**/*Test.java"/>
-      </batchtest>
-    </junit>
-  </target>
-
-
-  <!-- MAKE HTML FILES FOR JUNIT REPORTS -->
-  <target name="junitReport" depends="test" description="format junit test results" >
-    <junitreport todir="${junitReports}">
-      <fileset dir="${junitReports}" includes="TEST-*.xml"/>
-      <report todir="${junitReports}"/>
-    </junitreport>
-    <echo></echo>
-    <echo>Report root: ${junitReports}/index.html</echo>
-  </target>
-
-
-<!-- COMPILE TO JAR FILE -->
-  <target name="dist" depends="compile" description="generate the distribution" >
-    <mkdir dir="${dist}"/>
-    <jar jarfile="${dist}/${extensionEntryClass}.jar" >
-      <fileset dir="${srcBuild}" />
-      <fileset file="${bluejext.jar}" />
-      <manifest>
-        <attribute name="Main-Class" value="${extensionEntryClass}" />
-      </manifest>
-    </jar>
-  </target>
-
-
-  <!-- Generate PUBLIC API documentation for ${src} in ${docPublic} -->
-  <target name="doc-public" depends="init" description="generate the usage documentation" >
-    <mkdir dir="${docPublic}"/>
-    
-    <javadoc access="public" destdir="${docPublic}" classpathref="classpath.lib" encoding="cp1252"
-             additionalparam="-Xdoclint:none ${html.version}">
-      <fileset dir="${src}" casesensitive="yes" defaultexcludes="yes">
-        <filename name="**/*.java"/>
+  <!-- -->
+  <!-- DIST TARGETS -->
+  <!-- -->
+  <target name="build.extension" depends="compile.checkstyle"
+          description="Builds the extension jar file">
+    <mkdir dir="${dist.dir}" />
+    <mkdir dir="${dist.extensions.dir}" />
+    <jar jarfile="${dist.extensions.dir}/${extension}.jar"
+         manifest="config/manifest.mf"
+         update="false">
+      <fileset dir="target/checkstyle"/>
+      <fileset dir="docs">
+        <include name="*.xml"/>
       </fileset>
-      <link href="https://docs.oracle.com/javase/8/docs/api/" />
+      <zipfileset src="${checkstyle-all.jar}">
+        <exclude name="META-INF/"/>
+      </zipfileset>
+    </jar>
+    <copy todir=".">
+      <fileset dir="${dist.extensions.dir}">
+        <include name="${extension}.jar"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="build.bindist" depends="build.extension,javadoc"
+          description="Builds the compressed distribution files">
+    <delete dir="${dist.extensions.dir}/checkstyle" />
+    <mkdir dir="${dist.extensions.dir}/checkstyle" />
+    <mkdir dir="${dist.docs.dir}" />
+
+    <!-- copy stuff without filtering -->
+    <copy todir="${dist.docs.dir}">
+      <fileset dir =".">
+      	<include name="LICENSE*"/>
+        <include name="README"/>
+        <include name="RIGHTS.antlr"/>
+        <include name="contrib/**"/>
+        <include name="**/.cvsignore"/>
+        <include name="**/CVS"/>
+      </fileset>
+      <fileset dir="./docs">
+        <include name="**"/>
+        <exclude name="*.xml"/>
+        <exclude name="*.txt"/>
+        <exclude name="java.header"/>
+      </fileset>
+    </copy>
+    <copy todir="${dist.extensions.dir}/checkstyle">
+      <fileset dir="./docs">
+        <include name="*.xml"/>
+        <include name="java.header"/>
+      </fileset>
+      <fileset dir="./lib">
+        <include name="checkstyle*.jar"/>
+      </fileset>
+    </copy>
+    <!-- create the final zip & tar/gzip files -->
+    <zip zipfile="${dist.dir}/checkstyle-extension-${extension-version}.zip">
+      <fileset dir="${dist.dir}/${extension}">
+        <include name="**"/>
+      </fileset>
+    </zip>
+    <tar tarfile="${dist.dir}/checkstyle-extension-${extension-version}.tar" longfile="gnu"
+         basedir="${dist.dir}/${extension}" includes="**" />
+    <gzip zipfile="${dist.dir}/checkstyle-extension-${extension-version}.tar.gz"
+          src="${dist.dir}/checkstyle-extension-${extension-version}.tar" />
+  </target>
+
+  <target name="build.srcdist"
+          description="Builds the compressed source files for distribution">
+    <delete dir="${dist.dir}/checkstyle-extension-src-${extension-version}" />
+    <mkdir dir="${dist.dir}/checkstyle-extension-src-${extension-version}" />
+    <copy todir="${dist.dir}/checkstyle-extension-src-${extension-version}">
+      <fileset dir=".">
+        <include name="LICENSE*"/>
+        <include name="README"/>
+        <include name="TODO"/>
+        <include name="build.xml"/>
+        <include name="config/**"/>
+        <include name="docs/*"/>
+        <include name="${bluejext.jar}"/>
+        <include name="${checkstyle-all.jar}"/>
+        <include name="${checkstyle-optional.jar}"/>
+        <include name="src/**"/>
+      </fileset>
+    </copy>
+    <!-- Produce the final distributions -->
+    <zip zipfile="${dist.dir}/checkstyle-extension-src-${extension-version}.zip">
+      <fileset dir="${dist.dir}">
+        <include name="checkstyle-extension-src-${extension-version}/**"/>
+      </fileset>
+    </zip>
+    <tar tarfile="${dist.dir}/checkstyle-extension-src-${extension-version}.tar" longfile="gnu"
+         basedir="${dist.dir}" includes="checkstyle-extension-src-${extension-version}/**" />
+    <gzip zipfile="${dist.dir}/checkstyle-extension-src-${extension-version}.tar.gz"
+          src="${dist.dir}/checkstyle-extension-src-${extension-version}.tar" />
+  </target>
+
+  <target name="javadoc" depends="compile.checkstyle"
+          description="Creates the javadoc html files">
+    <mkdir dir="docs/api" />
+    <javadoc sourcepath="src/checkstyle" destdir="docs/api"
+             packagenames="com.puppycrawl.tools.checkstyle.*"
+             Windowtitle="Checkstyle Extension API"
+             classpathref="javadoc.classpath"
+             Use="true"
+             Footer="&lt;a target=&quot;_top&quot; href=&quot;./{@docRoot}/../index.html&quot;&gt;Back to the Checkstyle Extension Home Page&lt;/a&gt;">
+      <link href="https://docs.oracle.com/javase/8/docs/api/"/>
+      <link href="http://checkstyle.sourceforge.net/apidocs/"/>
     </javadoc>
   </target>
 
-
-  <!-- Generate PRIVATE API documentation for ${src} in ${docPrivate} -->
-  <target name="doc-private" depends="init" description="generate the maintenance documentation" >
-    <mkdir dir="${docPrivate}"/>
-    
-    <javadoc access="private" destdir="${docPrivate}" classpathref="classpath.lib" encoding="cp1252"
-             additionalparam="-Xdoclint:none ${html.version}">
-      <fileset dir="${src}" casesensitive="yes" defaultexcludes="yes">
-        <filename name="**/*.java"/>
-      </fileset>
-      <fileset dir="${test}" casesensitive="yes" defaultexcludes="yes">
-        <filename name="**/*.java"/>
-      </fileset>
-      <link href="https://docs.oracle.com/javase/8/docs/api/" />
-    </javadoc>
-  </target>
-
-
-  <!-- PRODUCE HTML VERSIONS OF SRC AND TEST FILES -->
-  <target name="format" depends="init" description="generate formatted versions of source code" >
-    <taskdef name="java2html"
-             classname="de.java2html.anttasks.Java2HtmlTask"
-             classpath="${lib}/java2html.jar" />
-    <java2html
-      srcdir="${src}"
-      destdir="${formattedsrc}"
-      includes="**/*.java"
-      outputFormat="html" tabs="2" style="kawa" showLineNumbers="true" 
-      showFileName="true" useShortFileName="true" showTableBorder="false" 
-      includeDocumentHeader="true" includeDocumentFooter="true" />
-    <java2html
-      srcdir="${test}"
-      destdir="${formattedsrc}"
-      includes="**/*.java"
-      outputFormat="html" tabs="2" style="kawa" showLineNumbers="true" 
-      showFileName="true" useShortFileName="true" showTableBorder="false" 
-      includeDocumentHeader="true" includeDocumentFooter="true" />
-  </target>
-
-
-  <!-- RUN CHECKSTYLE AND SAVE RESULTS IN ${stylecheck} -->
-  <target name="checkstyle" depends="init" description="generate checkstyle report" >
-    <taskdef resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.properties"
-	     classpath="${checkstyle.jar}" />
-    
-    <!-- Verify installation -->
-    <available file="${checkstyle.jar}" property="checkstyle.available" />
-    <fail unless="checkstyle.available" message="Error: checkstyle.jar not found." />
-    
-    <available file="${checks.xml}" property="checks.available" />
-    <fail unless="checks.available" message="Error: ${checks.xml} not found." />
-
-    <mkdir dir="${stylecheck}"/>
-    <checkstyle config="${checks.xml}" failureProperty="checkstyle.failure" failOnViolation="false">
-      <fileset dir="${src}" includes="**/*.java" />
-      <formatter type="plain" />
-      <formatter type="xml" tofile="${stylecheck}/checkstyle_report.xml" />
-    </checkstyle>
-    <xslt  in="${stylecheck}/checkstyle_report.xml"
-	         out="${stylecheck}/checkstyle_report.html"
-	         style="${checkstyle.xsl}" />
-  </target>
-
-
-  <!-- PMD LIB AND REPORT DIRECTORIES -->
-  <property name="pmd.dir" location="${lib}/pmd"/>
-  <property name="pmd.reports.dir" location="${antDirs}/pmd-cpd"/>
-  <path id="classpath.pmd">
-    <fileset dir="${pmd.dir}" includes="*.jar" />
-  </path>
-
-
-  <!-- MAKE PMD AND CPD OUTPUT DIRECTORY -->
-  <target name="pmdInit">
-    <mkdir dir="${pmd.reports.dir}"/>
-  </target>
-
-
-  <!-- RUN PMD CHECKS -->
-  <target name="pmd" description="process source with PMD" depends="pmdInit">
-    <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="classpath.pmd"/>
-
-    <pmd shortFilenames="true">
-      <sourceLanguage name="java" version="1.8"/>
-      <ruleset>java-basic</ruleset>
-      <ruleset>java-braces</ruleset>
-      <ruleset>java-codesize</ruleset>
-      <ruleset>java-design</ruleset>
-      <ruleset>java-empty</ruleset>
-      <ruleset>java-imports</ruleset>
-      <ruleset>java-unusedcode</ruleset>
-      <!-- <ruleset>rulesets/java/design.xml</ruleset> -->
-      <!-- <ruleset>java-comments</ruleset> -->
-      <!-- <ruleset>java-naming</ruleset> -->
-      <formatter type="html" toFile="${pmd.reports.dir}/pmd_report.html" toConsole="true">
-        <param name="linkPrefix" value="http://pmd.sourceforge.net/xref/"/>
-        <param name="linePrefix" value=".line"/>
-      </formatter>
-      <fileset dir="${src}">
-        <include name="**/*.java"/>
-      </fileset>
-    </pmd>
-    <echo message="PMD report is at ${pmd.reports.dir}/pmd_report.html" />
-  </target>
-
-
-  <!-- RUN CPD CHECKS -->
-  <target name="cpd" description="proccess source with CPD" depends="pmdInit">
-    <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="classpath.pmd"/>
-
-    <cpd  outputFile="${pmd.reports.dir}/cpd_report.xml"
-          minimumTokenCount="20" format="xml" ignoreLiterals="true">
-      <fileset dir="${src}">
-        <include name="**/*.java"/>
-      </fileset>
-    </cpd>
-
-    <property name="cpd.report.html" location="${pmd.reports.dir}/cpd_report.html" />
-    <xslt   in="${pmd.reports.dir}/cpd_report.xml"
-            style="${lib}/pmd/cpdhtml.xslt" 
-            out="${cpd.report.html}" />
-    <echo message="CPD report is at ${cpd.report.html}" />
-  </target>
-
-
-  <!-- JaCoCo -->
-  <!-- https://www.eclemma.org/jacoco/trunk/doc/ant.html -->
-  <property name="jacoco.dir" location="lib/jacoco"/>
-  <property name="jacoco.result.dir" location="${antDirs}/jacoco"/>
-  <property name="jacoco.reports.dir" location="${jacoco.result.dir}/reports"/>
-  <property name="jacoco.classes.dir" location="${jacoco.result.dir}/classes"/>
-  <property name="jacoco.instr.dir" location="${jacoco.result.dir}/instrumented"/>
-  <property name="jacoco.exec.file" location="${jacoco.result.dir}/jacoco.exec"/>
-
-  <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
-    <classpath path="${jacoco.dir}/jacocoant.jar"/>
-  </taskdef>
-
-
-  <target name="jacocoClean">
-    <delete dir="${jacoco.result.dir}"/>
-  </target>
-
-
-  <target name="testCoverage" depends="compile" description="run junit tests with JaCoCo instrumentation" >
-    <mkdir dir="${junitReports}"/>
-
-    <!-- Execute JUnit tests and save in ${junitReports} -->
-    <jacoco:coverage destfile="${jacoco.exec.file}">
-      <junit printsummary="withOutAndErr" haltonfailure="no" showoutput="true" fork="true" forkmode="once">
-        <classpath>
-          <path refid="classpath.test"/>
-          <path location="${testBuild}"/>
-        </classpath>
-        <formatter type="xml"/>
-        <formatter type="plain" usefile="false" />
-        <formatter type="plain"/>
-        <batchtest fork="yes" todir="${junitReports}">
-          <fileset dir="${test}" includes="**/*Test.java"/>
-        </batchtest>
-      </junit>
-    </jacoco:coverage>
-  </target>
-
-
-  <target name="testCoverageReport" depends="testCoverage" description="format JUnit and JaCoCo test results" >
-    <mkdir dir="${jacoco.reports.dir}"/>
-    <jacoco:report>
-      <executiondata>
-        <file file="${jacoco.exec.file}"/>
-      </executiondata>
-      <structure name="Coverage Report">
-        <classfiles>
-          <fileset dir="${build}"/>
-        </classfiles>
-        <sourcefiles encoding="cp1252">
-          <fileset dir="${test}"/>
-        </sourcefiles>
-      </structure>
-      <html destdir="${jacoco.reports.dir}"/>
-      <csv destfile="${jacoco.reports.dir}/jacoco_report.csv"/>
-      <xml destfile="${jacoco.reports.dir}/jacoco_report.xml"/>
-    </jacoco:report>
-    
-    <echo></echo>
-    <echo>Report roots:</echo>
-    <echo>${junitReports}/index.html</echo>
-    <echo>${jacoco.reports.dir}/index.html</echo>
-  </target>
-
-
-  <target name="coverage" depends="jacocoClean, testCoverageReport"/>
-
-
-  <!-- Only task that can probably be DELETED depend on this taks -->
-  <target name="jacocoCompile">
-    <mkdir dir="${jacoco.classes.dir}"/>
-
-    <javac srcdir="${src}" destdir="${jacoco.classes.dir}" classpathref="classpath.lib"
-           debug="on" includeantruntime="false" encoding="cp1252"
-           memoryinitialsize="1024m" memorymaximumsize="1024m" fork="yes"/>
-  </target>
-
-
-  <!-- I think we can DELETE this one. It's the non-preferred way to use JaCoCo -->
-  <!-- https://www.eclemma.org/jacoco/trunk/doc/ant.html#instrument -->
-  <target name="jacocoInstrument" depends="jacocoCompile">
-    <jacoco:instrument destdir="${jacoco.instr.dir}">
-      <fileset dir="${jacoco.classes.dir}"/>
-    </jacoco:instrument>
-  </target>
-
-
-  <!-- BlueJ Extensions have no main method. I think we can DELETE this. -->
-  <target name="jacocoTest" depends="jacocoInstrument">
-    <java classname="${mainclass}" fork="true">
-      <classpath>
-        <pathelement path="${jacoco.dir}/jacocoagent.jar"/>
-        <pathelement path="${jacoco.instr.dir}"/>
-      </classpath>
-      <sysproperty key="jacoco-agent.destfile" file="${jacoco.exec.file}"/>
-    </java>
-  </target>
-
-
-  <!-- This generates a report from the non-preferred jacoco:instrument taks -->
-  <!-- I think we can DELETE this -->
-  <target name="jacocoReport" depends="jacocoTest">
-    <jacoco:report>
-      <executiondata>
-        <file file="${jacoco.exec.file}\"/>
-      </executiondata>
-      <structure name="Coverage Report">
-        <classfiles>
-          <fileset dir="${jacoco.classes.dir}"/>
-        </classfiles>
-        <sourcefiles encoding="cp1252">
-          <fileset dir="${src}"/>
-        </sourcefiles>
-      </structure>
-      <html destdir="${jacoco.reports.dir}"/>
-      <csv destfile="${jacoco.reports.dir}/jacoco_report.csv"/>
-      <xml destfile="${jacoco.reports.dir}/jacoco_report.xml"/>
-    </jacoco:report>
-  </target>
-
-  <!-- JaCoCo END -->
-
-
-  <!-- Optimization via Proguard -->
-  <taskdef resource="proguard/ant/task.properties"
-           classpath="${proguard.dir}/proguard.jar" />
-
-  <target name="optimize" depends="compile" description="optimize using proguard" >
-    <mkdir dir="${dist}"/>
-
-    <!-- Put optimization targets from ${build} into the -dist.jar file -->
-    <jar jarfile="${dist}/${proguard.optimize.jar}" basedir="${srcBuild}"
-         includes="${proguard.optimize.class} ${proguard.optimize.interface}" >
-      <manifest>
-        <attribute name="Main-Class" value="${mainclass}" />
-      </manifest>
-    </jar>
-
-    <proguard configuration="${proguard.config}" shrink="true">
-          -libraryjars ${libraryjars}
-    </proguard>
-  </target>
-  <!-- Proguard END -->
-
-  <target name="testOptimized" depends="optimize" description="run junit tests using optimized jar" >
-    <!-- Create the test results directory structure -->
-    <mkdir dir="${test}"/>
-    <mkdir dir="${junitReports}"/>
-    <!-- Remove the unoptimized classes -->
-    <delete file="${build}/${proguard.optimize.class}"/>
-    <!-- Execute JUnit tests and save in ${junitReports} -->
-    <junit printsummary="withOutAndErr" haltonfailure="no" showoutput="true">
-      <classpath>
-        <path refid="classpath"/>
-        <path location="${build}"/>
-        <path>
-          <fileset dir="${dist}" includes="**/*-dist.jar"/>
-        </path>
-      </classpath>
-      <formatter type="xml"/>
-      <formatter type="plain" usefile="false" />
-      <formatter type="plain"/>
-      <batchtest fork="yes" todir="${junitReports}">
-        <fileset dir="${src}" includes="**/*Test.java"/>
-      </batchtest>
-    </junit>
-  </target>
-
-  <target name="testOptimizedReport" depends="testOptimized" description="format junit test results using optimized jar" >
-    <junitreport todir="${junitReports}">
-      <fileset dir="${junitReports}" includes="TEST-*.xml"/>
-      <report todir="${junitReports}"/>
-    </junitreport>
-    <echo></echo>
-    <echo>Report root: ${junitReports}/index.html</echo>
-  </target>
-
-
-  <target name="env" description="display build parameters">
-    <echo>
-      build.xml ${version}
-
-      Global settings:
-      java.home = ${java.home}
-      user.home = ${user.home}
-      java.class.path = ${java.class.path}
-
-      Target settings:
-      Classes:       ${build}
-      Distribution:  ${dist}
-      API Docs:      ${doc}
-      Style Check:   ${stylecheck}
-      Test Reports:  ${junitReports}
-      Test Coverage: ${coverage.html.dir}
-    </echo>
-  </target>
-
-
-  <target name="clean" description="clean up" depends="jacocoClean">
-    <delete dir="${antDirs}"/>
-  </target>
-  
 </project>
