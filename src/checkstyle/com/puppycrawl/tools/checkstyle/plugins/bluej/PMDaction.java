@@ -3,7 +3,8 @@ package com.puppycrawl.tools.checkstyle.plugins.bluej;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
-import net.sourceforge.pmd.*;
+import net.sourceforge.pmd.PMDConfiguration;
+
 
 class PMDaction extends AbstractAction {
 
