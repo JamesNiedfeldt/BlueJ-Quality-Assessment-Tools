@@ -1,5 +1,6 @@
 package com.puppycrawl.tools.checkstyle.plugins.bluej;
-
+import java.util.LinkedList;
+import java.io.File;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
@@ -30,14 +31,26 @@ class PMDaction extends AbstractAction {
     }
 
     public String runPMD(){
+        return "";
     }
 
+    //Generates configuration for PMD
     private PMDConfiguration configure(){
-        List<File> files = new List();
-        for(BPackage bPackage : bProject.getPackages()){
-            for(BClass bClass : bPackage.getClasses()){
-                files.add(bClass.getClassFile());
+        PMDConfiguration config = new PMDConfiguration();
+        LinkedList<File> files = new LinkedList();
+        try{
+            for(BPackage bPackage : bProject.getPackages()){
+                for(BClass bClass : bPackage.getClasses()){
+                    files.add(bClass.getClassFile());
+                }
             }
+        }catch(ProjectNotOpenException e){
+        
+        }catch(PackageNotFoundException e){
+
         }
+        config.setReportFormat("HTML");
+        
+        return config;
     }
 }
