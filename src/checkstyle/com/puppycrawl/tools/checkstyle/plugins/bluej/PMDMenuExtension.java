@@ -10,18 +10,9 @@ import bluej.extensions.*;
 public class PMDMenuExtension extends MenuGenerator{
     
     @Override
-    public JMenuItem getClassMenuItem(BClass aClass){
-        final JMenuItem jm = new JMenuItem("PMD");
-        jm.addActionListener(new PMDaction(aClass));
-        System.out.println("SetClassMenuAction");
-        return jm;
-    }
-
-    @Override
     public JMenuItem getToolsMenuItem(BPackage aPackage){
-        System.out.println("ToolsMenuGen");
-        final JMenuItem item = new JMenuItem("Tool");
-        item.addActionListener(new reportAction());
+        final JMenuItem item = new JMenuItem("PMD");
+        item.addActionListener(new PMDaction(aPackage));
         return item;
     }
 
