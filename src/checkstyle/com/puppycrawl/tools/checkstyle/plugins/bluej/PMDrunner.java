@@ -7,12 +7,10 @@ import java.io.InputStreamReader;
 //
 class PMDrunner{
     String pathToPMD;
-    String pathToChecks;
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    public PMDrunner(String pathToPMD, String pathToChecks){
+    public PMDrunner(String pathToPMD){
         this.pathToPMD = pathToPMD;
-        this.pathToChecks = pathToChecks;
     }
 
     public String run(String FileName){
@@ -59,9 +57,8 @@ class PMDrunner{
     }
     public static void main(String[]args){
         String pathToPMD = args[0];
-        String pathToChecks = args[1];
-        String FileName = args[2];
-        PMDrunner runner = new PMDrunner(pathToPMD, pathToChecks);
+        String FileName = args[1];
+        PMDrunner runner = new PMDrunner(pathToPMD);
         System.out.println(runner.run(FileName, "text"));
     }
 }
