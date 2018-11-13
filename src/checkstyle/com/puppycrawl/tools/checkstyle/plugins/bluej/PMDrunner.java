@@ -19,7 +19,8 @@ class PMDrunner{
 
     //output format should be "text" or "htm"
     public String run(String FileName, String outputFormat){
-        String myCommand = pathToPMD + ",-format," + outputFormat + "-R,java-quickstart,-version,1.8,-language+java,-d," + FileName;
+        String myCommand = pathToPMD + ",-format," + outputFormat + ",-R,java-quickstart,-version,1.8,-language,java,-d," + FileName;
+        System.out.println("Command: " + myCommand);
         ProcessBuilder pb = new ProcessBuilder(myCommand.split(","));
         pb.redirectErrorStream(false);
         final StringBuilder output = new StringBuilder();

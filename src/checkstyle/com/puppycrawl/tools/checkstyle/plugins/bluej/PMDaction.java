@@ -40,7 +40,6 @@ class PMDaction extends AbstractAction {
         try{
             this.bProject = aPackage.getProject();
             projectDir=bProject.getDir().toString();
-            System.out.println("Project Dir: " + projectDir);
         }
         catch(Exception e){
             e.printStackTrace();
@@ -77,42 +76,25 @@ class PMDaction extends AbstractAction {
                     filePaths[i] = filenames[i];
                 }catch(Exception e){e.printStackTrace();}
             }
-            for(File f : Paths.get(projectDir).toFile().listFiles()){
-                System.out.println(f.toString());
-                if(pmdMatcher.matches(f.toPath())){
-                    System.out.println("Match");
-                    if (isWindows()) {
-                        executable = new File(PMDPath, "bin/pmd.bat");
-                    } else {
-                        executable = new File(PMDPath, "bin/run.sh");
-                    }
-                    PMDPath = executable.getAbsolutePath();
-                }
+
+            executable = new File(projectDir, "pmd-bin-6.9.0");
+            if (isWindows()) {
+                executable = new File(executable, "bin/pmd.bat");
+            } else {
+                executable = new File(executable, "bin/run.sh");
             }
-            if(executable == null){
-                executable = new File(projectDir, "pmd-bin-6.9.0");
-                if (isWindows()) {
-                    executable = new File(PMDPath, "bin/pmd.bat");
-                } else {
-                    executable = new File(PMDPath, "bin/run.sh");
-                }
-                PMDPath = executable.getAbsolutePath();
-                System.out.println("PMDPath: " + PMDPath + "\nProjectDir: " + projectDir);
-            }
+            PMDPath = executable.getAbsolutePath();
         }
     }
 
     public void actionPerformed(ActionEvent event){
         PMDrunner runner = new PMDrunner(PMDPath);
         StringBuilder msg = new StringBuilder("Any problems found are displayed below:");
+        msg.append(LINE_SEPARATOR);
         for(int i = 0; i < filenames.length; i++){
-            System.out.println(filenames[i]);
-            System.out.println(filePaths[i]);
-            System.out.println(runner.pathToPMD);
             String output = runner.run(filePaths[i]);
-            msg.append("Class Checked: " + filenames[i]);
+            msg.append(output); 
             msg.append(LINE_SEPARATOR);
-            msg.append(output); msg.append(LINE_SEPARATOR);
         }
 
         JOptionPane.showMessageDialog(null, msg);
