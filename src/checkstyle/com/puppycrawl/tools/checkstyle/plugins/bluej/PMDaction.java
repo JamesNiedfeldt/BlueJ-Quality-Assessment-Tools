@@ -24,7 +24,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
-
+//TODO: Implement Properties and fix file path for command
 class PMDaction extends AbstractAction {
     BProject bProject;
     String projectDir;
@@ -40,6 +40,7 @@ class PMDaction extends AbstractAction {
         try{
             this.bProject = aPackage.getProject();
             projectDir=bProject.getDir().toString();
+            System.out.println("Project Dir: " + projectDir);
         }
         catch(Exception e){
             e.printStackTrace();
@@ -77,17 +78,26 @@ class PMDaction extends AbstractAction {
                 }catch(Exception e){e.printStackTrace();}
             }
             for(File f : Paths.get(projectDir).toFile().listFiles()){
+                System.out.println(f.toString());
                 if(pmdMatcher.matches(f.toPath())){
-                    PMDPath = f.toString();
-                    System.out.println("PMDPath: " + PMDPath);
+                    System.out.println("Match");
                     if (isWindows()) {
                         executable = new File(PMDPath, "bin/pmd.bat");
                     } else {
                         executable = new File(PMDPath, "bin/run.sh");
                     }
                     PMDPath = executable.getAbsolutePath();
-                    System.out.println(executable);
                 }
+            }
+            if(executable == null){
+                executable = new File(projectDir, "pmd-bin-6.9.0");
+                if (isWindows()) {
+                    executable = new File(PMDPath, "bin/pmd.bat");
+                } else {
+                    executable = new File(PMDPath, "bin/run.sh");
+                }
+                PMDPath = executable.getAbsolutePath();
+                System.out.println("PMDPath: " + PMDPath + "\nProjectDir: " + projectDir);
             }
         }
     }
@@ -96,6 +106,9 @@ class PMDaction extends AbstractAction {
         PMDrunner runner = new PMDrunner(PMDPath);
         StringBuilder msg = new StringBuilder("Any problems found are displayed below:");
         for(int i = 0; i < filenames.length; i++){
+            System.out.println(filenames[i]);
+            System.out.println(filePaths[i]);
+            System.out.println(runner.pathToPMD);
             String output = runner.run(filePaths[i]);
             msg.append("Class Checked: " + filenames[i]);
             msg.append(LINE_SEPARATOR);

@@ -19,8 +19,8 @@ class PMDrunner{
 
     //output format should be "text" or "htm"
     public String run(String FileName, String outputFormat){
-        String myCommand = pathToPMD + " -format " + outputFormat + "-R java-quickstart -version 1.8 -language java -d " + FileName;
-        ProcessBuilder pb = new ProcessBuilder(myCommand.split(" +"));
+        String myCommand = pathToPMD + ",-format," + outputFormat + "-R,java-quickstart,-version,1.8,-language+java,-d," + FileName;
+        ProcessBuilder pb = new ProcessBuilder(myCommand.split(","));
         pb.redirectErrorStream(false);
         final StringBuilder output = new StringBuilder();
         try{
@@ -31,7 +31,7 @@ class PMDrunner{
                     BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
                     String s;
                     try {
-                        while ((s = stdInput.readLine()) != null ){ 
+                        while ((s = stdInput.readLine()) != null ){
                             output.append(s);
                             output.append(LINE_SEPARATOR);
                         }
