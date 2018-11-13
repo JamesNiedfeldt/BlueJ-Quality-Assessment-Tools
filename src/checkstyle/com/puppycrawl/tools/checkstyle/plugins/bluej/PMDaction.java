@@ -112,16 +112,6 @@ class PMDaction extends AbstractAction {
         }
         return output.toString();
     }
-
-    //Should be called on compile and when extension is
-    //loaded. Provides a handle to all of the relevant
-    //BlueJ objects (classes, packages, directories, etc.)
-    //Should be called on Save/Compile etc, but definitely
-    //before action performed is run
-    public void update(BProject bProject){
-        this.bProject = bProject;
-    }
-
     private boolean isWindows(){
         return (OS.indexOf("win") >= 0);
     }
@@ -131,38 +121,3 @@ class PMDaction extends AbstractAction {
     }
 
 }
-//
-//    //Generates configuration for PMD
-//    private PMDConfiguration configure(){
-//        PMDConfiguration config = new PMDConfiguration();
-//        LinkedList sourceFiles = new LinkedList<File>();
-//        try{
-//            for(BPackage bPackage : bProject.getPackages()){
-//                for(BClass bClass : bPackage.getClasses()){
-//                    sourceFiles.add(bClass.getClassFile());
-//                }
-//            }
-//        }catch(ProjectNotOpenException e){
-//            e.printStackTrace();
-//        }catch(PackageNotFoundException e){
-//            e.printStackTrace();
-//        }
-//        config.setReportFormat("HTML");
-//        makeReportFolder();
-//        config.setReportFile(Paths.get(projectDir, "Reports/PMD"));
-//        String ruleURIs = "";
-//        for(File file : checkPath.toFile().listFiles()){
-//            ruleURIs.append(file.toURI().toString() + ",");
-//        }
-//        return config;
-//    }
-//    private void makeReportFolder(){
-//        try{
-//            File reportDir = Paths.get(projectDir, "Reports").toFile();
-//            File pmdReportDir = Paths.get(reportDir.toString(), "PMD").toFile();
-//            if(!reportDir.exists() || !(pmdReportDir.exists())){
-//                    reportDir.mkdir();
-//                    pmdReportDir.mkdir();
-//            }
-//        }catch(Exception e){}
-//    }

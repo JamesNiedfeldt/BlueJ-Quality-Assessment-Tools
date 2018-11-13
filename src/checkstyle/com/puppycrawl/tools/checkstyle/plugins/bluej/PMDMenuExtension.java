@@ -8,7 +8,7 @@ import javax.swing.JMenu;
 import bluej.extensions.*;
 
 public class PMDMenuExtension extends MenuGenerator{
-    
+
     @Override
     public JMenuItem getToolsMenuItem(BPackage aPackage){
         final JMenuItem item = new JMenuItem("PMD");
@@ -16,13 +16,4 @@ public class PMDMenuExtension extends MenuGenerator{
         return item;
     }
 
-    class reportAction extends AbstractAction {
-        public reportAction(){
-            putValue(AbstractAction.NAME, "Tool");
-
-        }
-        public void actionPerformed(ActionEvent event){
-            System.out.println("ToolPress");
-        }
-    }
 }
