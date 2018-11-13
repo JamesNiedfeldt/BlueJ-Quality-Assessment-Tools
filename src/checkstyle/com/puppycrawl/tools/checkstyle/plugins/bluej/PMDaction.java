@@ -38,8 +38,6 @@ class PMDaction extends AbstractAction {
 
 
     public PMDaction(BClass aClass){
-        yell();
-        System.out.println(aClass.toString());
         putValue(AbstractAction.NAME, "PMD");
         try{
             this.bProject = aClass.getPackage().getProject();
@@ -71,9 +69,6 @@ class PMDaction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent event){
-        //TODO: Collect all java files worked on
-        //TODO: Generate PMD preferences
-        //TODO: Generate PMD reports
         String myCommand = PMDPath + " pmd -format text -R java-basic,java-design -version 1.8 -language java -d " + JavaFileName;
         String output = runPMD(myCommand);
 
