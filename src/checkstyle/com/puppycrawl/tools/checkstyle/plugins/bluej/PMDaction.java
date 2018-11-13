@@ -38,7 +38,7 @@ class PMDaction extends AbstractAction {
 
     public PMDaction(BPackage aPackage){
         try{
-            this.bProject = aPackage().getProject();
+            this.bProject = aPackage.getProject();
             projectDir=bProject.getDir().toString();
         }
         catch(Exception e){
@@ -46,22 +46,48 @@ class PMDaction extends AbstractAction {
         }
         FileSystem fs = FileSystems.getDefault();
         PathMatcher pmdMatcher = fs.getPathMatcher("glob:pmd*");
-        String [] filenames = aPackage.getClasses().getJavaFile().getAbsolutePath();
-        filePaths = new String[filenames.length];
-        for(int i = 0; i < filenames.length; i++){
-            try{
-                filePaths[i] = filenames[i].getJavaFile().getPath();
-            }catch(Exception e){e.printStackTrace();}
+        BClass [] classes;
+        try{
+            classes = aPackage.getClasses();
+        }catch(ProjectNotOpenException e){
+            classes = null;
+            e.printStackTrace();
+        }catch(PackageNotFoundException e){
+            classes = null;
+            e.printStackTrace();
         }
-        for(File f : Paths.get(projectDir).toFile().listFiles()){
-            if(pmdMatcher.matches(f.toPath())){
-                PMDPath = f.toString();
-                if (isWindows()) {
-                    executable = new File(PMDPath, "bin/pmd.bat");
-                } else {
-                    executable = new File(PMDPath, "bin/run.sh");
+        if(classes != null){
+            filenames = new String[classes.length];
+            filePaths = new String[classes.length];
+            int iterCount = 0;
+            try{
+                for(BClass cls : classes){
+                    filenames[iterCount] = cls.getJavaFile().toString();
+                    filePaths[iterCount] = cls.getJavaFile().getAbsolutePath();
+                    iterCount++;
                 }
-                PMDPath = executable.getAbsolutePath();
+            }catch(ProjectNotOpenException e){
+                e.printStackTrace();
+            }catch(PackageNotFoundException e){
+                e.printStackTrace();
+            }
+            for(int i = 0; i < filenames.length; i++){
+                try{
+                    filePaths[i] = filenames[i];
+                }catch(Exception e){e.printStackTrace();}
+            }
+            for(File f : Paths.get(projectDir).toFile().listFiles()){
+                if(pmdMatcher.matches(f.toPath())){
+                    PMDPath = f.toString();
+                    System.out.println("PMDPath: " + PMDPath);
+                    if (isWindows()) {
+                        executable = new File(PMDPath, "bin/pmd.bat");
+                    } else {
+                        executable = new File(PMDPath, "bin/run.sh");
+                    }
+                    PMDPath = executable.getAbsolutePath();
+                    System.out.println(executable);
+                }
             }
         }
     }
@@ -73,8 +99,7 @@ class PMDaction extends AbstractAction {
             String output = runner.run(filePaths[i]);
             msg.append("Class Checked: " + filenames[i]);
             msg.append(LINE_SEPARATOR);
-            msg.append(output);
-            msg.append(LINE_SEPARATOR);
+            msg.append(output); msg.append(LINE_SEPARATOR);
         }
 
         JOptionPane.showMessageDialog(null, msg);
