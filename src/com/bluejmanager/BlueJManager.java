@@ -20,13 +20,11 @@
 package com.bluejmanager;
 
 import java.awt.Frame;
-import java.awt.Point;
 import java.io.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import bluej.extensions.BClass;
 import bluej.extensions.BPackage;
@@ -35,8 +33,6 @@ import bluej.extensions.BlueJ;
 import bluej.extensions.ClassNotFoundException;
 import bluej.extensions.PackageNotFoundException;
 import bluej.extensions.ProjectNotOpenException;
-
-import com.tools.checkstyle.*;
 
 /**
  * Manages the BlueJ object for a BlueJ extension
@@ -48,25 +44,8 @@ public final class BlueJManager
     /** singleton */
     private static BlueJManager sInstance = null;
 
-    /** configuration file name key */
-    private static final String CONFIG_FILE_NAME_KEY =
-        "checkstyle.configfile";
-
-    /** properties file name key */
-    private static final String PROPS_FILE_NAME_KEY =
-        "checkstyle.propsfile";
-
-    /** determine whether checkstyle audit window is open */
-    private static final String IS_OPEN_KEY =
-        "checkstyle.frameisopen";
-
-    /** audit window dimensions */
-    private static final String FRAME_DIMENSIONS =
-        "checkstyle.framedimensions";
-
-    /** default configuration file */
-    private static final String DEFAULT_CONFIG_FILE =
-        "default_checks.xml";
+    /** Base name for extension properties */
+    private static final String EXT_BASE = "qualityToolsExtension";
 
     /** BlueJ application proxy */
     private BlueJ mBlueJ = null;
@@ -79,10 +58,7 @@ public final class BlueJManager
     private Set<String> mMissingResources = new HashSet<String>();
 
     /** A properties facade over mBlueJ.  Initialized lazily. */
-    private BlueJPropertiesAdapter mBlueJProperties;
-
-    /** offset of corner relative to current frame */
-        private static final int FRAME_OFFSET = 20;
+    private BlueJPropertiesAdapter mBlueJPropertiesAdapter;
 
     /**
      * Returns the singleton BlueJManager.
@@ -112,9 +88,9 @@ public final class BlueJManager
     public void setBlueJ(BlueJ aBlueJ)
     {
         mBlueJ = aBlueJ;
-        if (mBlueJProperties != null)
+        if (mBlueJPropertiesAdapter != null)
         {
-            mBlueJProperties.setBlueJ(aBlueJ);
+            mBlueJPropertiesAdapter.setBlueJ(aBlueJ);
         }
     }
 
@@ -133,41 +109,6 @@ public final class BlueJManager
         for (int i = 0; i < projects.length; i++)
         {
             result.addAll(getBClasses(projects[i]));
-        }
-        return result;
-    }
-
-    /**
-     * Returns the files for all valid open projects. All project classes
-     * must be compiled.
-     * @return the files for all valid open projects.
-     * @throws ClassNotFoundException if a class is not found.
-     * @throws ProjectNotOpenException if a project is not open.
-     * @throws PackageNotFoundException if a package is not found.
-     */
-    public Set<File> getFiles()
-        throws ClassNotFoundException,
-               ProjectNotOpenException,
-               PackageNotFoundException
-    {
-        final Set<File> result = new HashSet<File>();
-        final Set<BClass> classes = getBClasses();
-        for (Iterator<BClass> iter = classes.iterator(); iter.hasNext();)
-        {
-            BClass theClass = iter.next();
-            final BPackage thePackage = theClass.getPackage();
-            final BProject theProject = thePackage.getProject();
-            final String projectDirName =
-                theProject.getDir().toString().replaceAll("\\\\", "/");
-            String className = theClass.getJavaClass().getName();
-            className = className.replaceAll("\\.", "/");
-            final String fullName =
-                projectDirName + "/" + className + ".java";
-            final File file = new File(fullName);
-            if (file.exists())
-            {
-                result.add(file);
-            }
         }
         return result;
     }
@@ -216,6 +157,41 @@ public final class BlueJManager
     }
 
     /**
+     * Returns the files for all valid open projects. All project classes
+     * must be compiled.
+     * @return the files for all valid open projects.
+     * @throws ClassNotFoundException if a class is not found.
+     * @throws ProjectNotOpenException if a project is not open.
+     * @throws PackageNotFoundException if a package is not found.
+     */
+    public Set<File> getFiles()
+            throws ClassNotFoundException,
+            ProjectNotOpenException,
+            PackageNotFoundException
+    {
+        final Set<File> result = new HashSet<File>();
+        final Set<BClass> classes = getBClasses();
+        for (Iterator<BClass> iter = classes.iterator(); iter.hasNext();)
+        {
+            BClass theClass = iter.next();
+            final BPackage thePackage = theClass.getPackage();
+            final BProject theProject = thePackage.getProject();
+            final String projectDirName =
+                    theProject.getDir().toString().replaceAll("\\\\", "/");
+            String className = theClass.getJavaClass().getName();
+            className = className.replaceAll("\\.", "/");
+            final String fullName =
+                    projectDirName + "/" + className + ".java";
+            final File file = new File(fullName);
+            if (file.exists())
+            {
+                result.add(file);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Finds the current frame of the BlueJ application.
      * @return the current frame of the BlueJ application.
      */
@@ -240,48 +216,15 @@ public final class BlueJManager
      * Finds the current frame of the BlueJ application.
      * @return the current frame of the BlueJ application.
      */
-    public Properties properties()
+    public Properties getPropertiesAdapter()
     {
-        if (mBlueJProperties == null)
+        if (mBlueJPropertiesAdapter == null)
         {
-            mBlueJProperties =
+            mBlueJPropertiesAdapter =
                 new BlueJPropertiesAdapter(mBlueJ, System.getProperties());
         }
-        return mBlueJProperties;
+        return mBlueJPropertiesAdapter;
     }
-
-
-    /**
-     * Opens a stream connected to the specified configuration file.
-     * @return An input stream connected to the resource, or null if the
-     * resource cannot be opened.
-     */
-    public InputStream getConfigStream()
-    {
-        return getResourceStream(
-            mBlueJ.getExtensionPropertyString(
-                CONFIG_FILE_NAME_KEY, DEFAULT_CONFIG_FILE),
-            DEFAULT_CONFIG_FILE,
-            "checkstyle configuration file"
-            );
-    }
-
-
-    /**
-     * Opens a stream connected to the specified configuration file.
-     * @return An input stream connected to the resource, or null if the
-     * resource cannot be opened.
-     */
-    public InputStream getPropertyStream()
-    {
-        return getResourceStream(
-            mBlueJ.getExtensionPropertyString(
-                PROPS_FILE_NAME_KEY, null),
-            null,
-            null
-            );
-    }
-
 
     /**
      * Opens a stream connected to a named resource, which could resolve to
@@ -298,11 +241,11 @@ public final class BlueJManager
      * @return An input stream connected to the resource, or null if the
      * resource (and, if specified, the secondary resource) cannot be opened.
      */
-    private InputStream getResourceStream(
+    public InputStream getResourceStream(
         String name, String defaultName, String description)
     {
         InputStream result = null;
-        if (name != null && !name.equals(""))
+        if (name != null && !name.isEmpty())
         {
             result = getResourceStream(name);
             if (result == null && defaultName != null && description != null)
@@ -420,104 +363,32 @@ public final class BlueJManager
         return null;
     }
 
-
     /**
-     * Retrieves the Checkstyle configuration file property value.
-     * @return the name of the Checkstyle configuration file.
+     * Get a property from the extension property store.
+     * @param propertyName The property to fetch
+     * @param def The default if property is not found
+     * @return The fetched property or default
      */
-    public String getConfigFileName()
-    {
-        return mBlueJ.getExtensionPropertyString(
-            CONFIG_FILE_NAME_KEY, null);
+    public String getExtensionPropertyString(String propertyName, String def){
+        String prop = EXT_BASE + "." + propertyName;
+        return mBlueJ.getExtensionPropertyString(prop, def);
     }
 
     /**
-     * Determines the name of the Checkstyle properties file.
-     * @return the name of the Checkstyle properties file.
+     * Stores a property in the extension property store.
+     * @param propertyName The name of the property
+     * @param value The value of the property
      */
-    public String getPropsFileName()
-    {
-        return mBlueJ.getExtensionPropertyString(
-            PROPS_FILE_NAME_KEY, null);
+    public void setExtensionPropertyString(String propertyName, String value){
+        String prop = EXT_BASE + "." + propertyName;
+        mBlueJ.setExtensionPropertyString(prop, value);
     }
 
     /**
-     * Saves the name of the configuration file.
-     * @param aName the name of the configuration file.
+     * Exposes the missing resources list
+     * @return The missing resources list
      */
-    public void saveConfigFileName(String aName)
-    {
-        String old = mBlueJ.getExtensionPropertyString(
-            CONFIG_FILE_NAME_KEY, null);
-        if (old != null && !old.equals(""))
-        {
-            mMissingResources.remove(old);
-        }
-        mBlueJ.setExtensionPropertyString(CONFIG_FILE_NAME_KEY, aName);
-    }
-
-    /**
-     * Saves the name of the properties file.
-     * @param aName the name of the properties file.
-     */
-    public void savePropsFileName(String aName)
-    {
-        String old = mBlueJ.getExtensionPropertyString(
-            PROPS_FILE_NAME_KEY, null);
-        if (old != null && !old.equals(""))
-        {
-            mMissingResources.remove(old);
-        }
-        mBlueJ.setExtensionPropertyString(PROPS_FILE_NAME_KEY, aName);
-    }
-
-    /**
-     * Initializes an audit frame from extension properties.
-     * @param aFrame the audit frame to initialize.
-     */
-    public void initAuditFrame(AuditFrame aFrame)
-    {
-        // location and size
-        final String frameDimensions =
-            mBlueJ.getExtensionPropertyString(FRAME_DIMENSIONS, "");
-        if (!frameDimensions.equals(""))
-        {
-            final StringTokenizer tokenizer =
-                new StringTokenizer(frameDimensions);
-            final int x = Integer.parseInt(tokenizer.nextToken());
-            final int y = Integer.parseInt(tokenizer.nextToken());
-            aFrame.setLocation(x, y);
-            // aFrame.setSize(width, height);
-        }
-        else
-        {
-            final Frame bluejFrame = getCurrentFrame();
-            Point corner = new Point(0, 0);
-            if (bluejFrame != null) {
-                corner = bluejFrame.getLocation();
-            }
-            corner.translate(FRAME_OFFSET, FRAME_OFFSET);
-            aFrame.setLocation(corner);
-        }
-        if (Boolean.valueOf(mBlueJ.getExtensionPropertyString(
-            IS_OPEN_KEY, "false")).booleanValue())
-        {
-            aFrame.setVisible(true);
-        }
-    }
-
-    /**
-     * Saves audit frame information in properties.
-     * @param aFrame the frame to save.
-     */
-    public void saveAuditFrame(AuditFrame aFrame)
-    {
-        mBlueJ.setExtensionPropertyString(
-            IS_OPEN_KEY, "" + aFrame.isShowing());
-        final String frameDimensions = (int) aFrame.getLocation().getX() + " "
-            + (int) aFrame.getLocation().getY() + " "
-            + (int) aFrame.getSize().getWidth() + " "
-            + (int) aFrame.getSize().getHeight();
-        mBlueJ.setExtensionPropertyString(FRAME_DIMENSIONS, frameDimensions);
+    public Set<String> getMissingResources(){
+        return mMissingResources;
     }
 }

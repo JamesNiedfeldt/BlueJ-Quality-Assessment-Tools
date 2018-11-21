@@ -42,14 +42,12 @@ public class FilesChangeListener implements ActionListener
     {
         try
         {
-//          files changed?
             final Set<File> openFiles = BlueJManager.getInstance().getFiles();
             if (!mFiles.equals(openFiles))
             {
                 mFiles = openFiles;
-                final BlueJChecker checker = new BlueJChecker();
-                final Auditor auditor = checker.process(openFiles);
-                QualityAssessmentExtension.getInstance().viewAudit(auditor);
+                final Auditor auditor = BlueJChecker.process(openFiles);
+                QualityAssessmentExtension.getInstance().mCheckstyleUI.viewAudit(auditor);
             }
         }
         catch (Exception ex)
