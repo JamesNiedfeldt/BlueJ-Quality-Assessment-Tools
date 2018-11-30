@@ -32,8 +32,10 @@ import org.apache.commons.logging.LogFactory;
 
 import bluej.extensions.BlueJ;
 import bluej.extensions.Extension;
+import bluej.extensions.BPackage;
 
 import com.tools.checkstyle.*;
+import com.tools.pmd.*;
 
 /**
  * BlueJ extension for Checkstyle.
@@ -72,6 +74,9 @@ public class QualityAssessmentExtension extends Extension
 
     /** Handles display and events for checkstyle tool */
     public com.tools.checkstyle.UI mCheckstyleUI;
+    
+    /** Holds PMD report */
+    public com.tools.pmd.PMD_Report mPMDReport;
 
    /**
      * Returns the single QualityAssessmentExtension instance.
@@ -108,6 +113,9 @@ public class QualityAssessmentExtension extends Extension
 
         mCheckstyleUI = UI.getCheckstyleUI();
         mCheckstyleUI.addListeners(aBlueJ);
+
+        mPMDReport = new PMD_Report();
+        aBlueJ.addCompileListener(new com.tools.pmd.PMD_Compile_Listener());
 
         // install menu item
         mMenu = new ExtensionMenu();
