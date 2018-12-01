@@ -21,8 +21,8 @@ public class PMD_Compile_Listener implements CompileListener{
   }
   
   public void compileSucceeded(CompileEvent event){
-    PMD_Report report = PMD_Report_Builder.getInstance().generatePMDReport();
-    QualityAssessmentExtension.getInstance().mPMDReport = report;
+    Thread thread = new Thread(new PMD_Runnable_Thread());
+    thread.start();
   }
   
   public void compileWarning(CompileEvent event){
