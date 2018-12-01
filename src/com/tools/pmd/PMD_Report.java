@@ -16,6 +16,7 @@ public class PMD_Report {
     finalized = false;
   }
   
+
   /** Adds a line to the message if not finalized */
   public void appendMessage(String input){
     if(!finalized){
