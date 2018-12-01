@@ -71,6 +71,7 @@ public class PMD_Report_Builder {
             }
         }
 
+        report.finalize();
         return report;
     }
 
