@@ -67,7 +67,7 @@ public class PMD_Report_Builder {
         report.appendMessage(output);
       }
     }
-    
+    report.finalize();
     return report;
   }
 
