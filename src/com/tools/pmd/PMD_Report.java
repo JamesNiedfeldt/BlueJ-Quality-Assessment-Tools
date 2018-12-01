@@ -9,7 +9,7 @@ public class PMD_Report {
   private static final String NOT_FINISHED = "The PMD report is not ready yet. "+
   "It will be ready after you compile and after the PMD checks are finished.";
   
-  /**Constructor, readys the StringBuilder with EXPLANATION as header */
+  /** Constructor, readys the StringBuilder with EXPLANATION as as header */
   public PMD_Report(){
     msg = new StringBuilder(EXPLANATION);
     msg.append(LINE_SEPARATOR);
@@ -23,7 +23,7 @@ public class PMD_Report {
       msg.append(LINE_SEPARATOR);
     }
   }
-  
+
   /** Returns NOT_FINISHED if report is not finalized, otherwise returns message */
   public String getMessage(){
     if(!finalized){
