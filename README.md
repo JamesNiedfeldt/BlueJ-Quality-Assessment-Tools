@@ -16,7 +16,7 @@ The checkstyle component included here was taken from the existing *checkstyle4b
 
 ## Installation Instructions
 
-Copy the jar file quality-tools-extension-X.Y.Z.jar to the bluej extension directory (../BlueJ/lib/extensions)
+Copy the jar file quality-tools-extension-X.Y.Z.jar in the project root directory to the bluej extension directory (../BlueJ/lib/extensions)
 
 #### PMD
 For default functionality unzip the desired pmd-bin-\* to the BlueJ lib directory (../BlueJ/lib) into a folder named pmd-bin-\*. The pmd executable files (pmd.bat and run.sh) should be located in the BlueJ folder at ../lib/pmd-bin-\*/bin/ after extraction. At last check, PMD 6.9.0 has this required directory structure. The current distirbution, **pmd-bin-6.9.0.zip**, can be downloaded from
